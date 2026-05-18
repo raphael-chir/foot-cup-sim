@@ -2,7 +2,6 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 ![Maintainer](https://img.shields.io/badge/maintainer-raphael.chir@gmail.com-blue)
 
-````md
 # ⚽ foot-cup-sim
 
 **World Cup 2026 Simulator** built with:
@@ -35,7 +34,7 @@ React/Vite Frontend
           ↓
  PostgreSQL 17
  (business logic)
-````
+```
 ---
 
 # Prerequisites
