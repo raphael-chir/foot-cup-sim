@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgrest
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: postgrest
+
+  template:
+    metadata:
+      labels:
+        app: postgrest
+
+    spec:
+      containers:
+      - name: postgrest
+        image: postgrest/postgrest:v14.1
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 3000
+
+        env:
+        - name: PGRST_DB_URI
+          valueFrom:
+            secretKeyRef:
+              name: postgrest-secret
+              key: PGRST_DB_URI
+
+        - name: PGRST_DB_SCHEMA
+          value: "public"
+
+        - name: PGRST_DB_ANON_ROLE
+          value: "app"
+
+        - name: PGRST_OPENAPI_MODE
+          value: "follow-privileges"
+
+        - name: PGRST_OPENAPI_SERVER_PROXY_URI
+          value: "http://postgrest-edb-emea-user-b.apps-crc.testing"
+
+        - name: PGRST_SERVER_CORS_ALLOWED_ORIGINS
+          value: "http://localhost:5173,http://localhost:8080,http://swagger-ui-edb-emea-user-b.apps-crc.testing,http://worldcup-ui-edb-emea-user-b.apps-crc.testing"

@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: worldcup-db-restore
+spec:
+  backoffLimit: 1
+
+  template:
+    spec:
+      restartPolicy: Never
+
+      containers:
+      - name: db-restore
+        image: postgres:17
+
+        env:
+        - name: URI
+          valueFrom:
+            secretKeyRef:
+              name: postgrest-secret
+              key: PGRST_DB_URI
+
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+
+          echo "Cleaning public schema..."
+          psql "$URI" -v ON_ERROR_STOP=1 -c "
+          DROP SCHEMA IF EXISTS public CASCADE;
+          CREATE SCHEMA public;
+          "
+
+          echo "Preparing restore list without pg_stat_statements..."
+          pg_restore --list /backup/worldcup.dump \
+            | grep -v "pg_stat_statements" \
+            > /tmp/restore.list
+
+          echo "Restoring dump..."
+          pg_restore \
+            --use-list=/tmp/restore.list \
+            --no-owner \
+            --no-privileges \
+            --dbname="$URI" \
+            /backup/worldcup.dump
+
+          echo "Restore completed successfully."
+
+        volumeMounts:
+        - name: db-dump
+          mountPath: /backup
+
+      volumes:
+      - name: db-dump
+        configMap:
+          name: worldcup-db-dump

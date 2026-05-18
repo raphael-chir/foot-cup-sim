@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swagger-ui
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: swagger-ui
+
+  template:
+    metadata:
+      labels:
+        app: swagger-ui
+
+    spec:
+      containers:
+        - name: swagger-ui
+          image: swaggerapi/swagger-ui:latest
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: URL
+              value: "http://postgrest-edb-emea-user-b.apps-crc.testing/"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: swagger-ui
+spec:
+  selector:
+    app: swagger-ui
+
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: swagger-ui
+spec:
+  to:
+    kind: Service
+    name: swagger-ui
+
+  port:
+    targetPort: http

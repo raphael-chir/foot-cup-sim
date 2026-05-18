@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worldcup-ui
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: worldcup-ui
+
+  template:
+    metadata:
+      labels:
+        app: worldcup-ui
+
+    spec:
+      containers:
+      - name: worldcup-ui
+        image: ghcr.io/raphael-chir/worldcup-ui:0.1.0
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8080
+
+        env:
+        - name: API_URL
+          value: "http://postgrest-edb-emea-user-b.apps-crc.testing"
+
+        - name: MODE
+          value: "operator"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: worldcup-ui
+spec:
+  selector:
+    app: worldcup-ui
+
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: worldcup-ui
+spec:
+  to:
+    kind: Service
+    name: worldcup-ui
+
+  port:
+    targetPort: http
